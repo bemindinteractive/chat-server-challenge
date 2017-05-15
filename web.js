@@ -25,12 +25,18 @@ app.use(bodyParser.json())
 app.use(morgan('dev'))
 app.use(cookieParser())
 
+const dbDir = '.tmp/db.json'
 const minuteOffset = 3600000
 
 let db
 
-const getDb = () => jetpack.read('.tmp/db.json', 'json')
-const commitDb = () => jetpack.write('.tmp/db.json', db)
+const getDb = () => jetpack.read(dbDir, 'json')
+const commitDb = () => {
+  if (!jetpack.exists(dbDir)) {
+    jetpack.dir('./tmp')
+  }
+  return jetpack.write(dbDir, db)
+}
 
 const initDb = () => {
   try {
