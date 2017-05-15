@@ -31,14 +31,12 @@ const minuteOffset = 3600000
 let db
 
 const getDb = () => jetpack.read(dbDir, 'json')
-const commitDb = () => {
-  if (!jetpack.exists(dbDir)) {
-    jetpack.dir('./tmp')
-  }
-  return jetpack.write(dbDir, db)
-}
+const commitDb = () => jetpack.write(dbDir, db)
 
 const initDb = () => {
+
+  jetpack.append(dbDir, '')
+
   try {
     db = getDb()
   } catch (ex) {
