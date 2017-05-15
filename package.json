@@ -1,11 +1,11 @@
 {
   "name": "chat-server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "web.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon index.js",
-    "start": "node index.js",
+    "dev": "nodemon web.js",
+    "start": "node web.js",
     "test": "standard"
   },
   "dependencies": {
