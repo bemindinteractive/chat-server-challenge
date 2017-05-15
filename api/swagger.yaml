@@ -1,329 +1,255 @@
----
-swagger: "2.0"
+swagger: '2.0'
 info:
-  description: "This is a sample chat server."
-  version: "1.0.0"
-  title: "Chat Server Challange"
-  termsOfService: "http://swagger.io/terms/"
+  description: This is a sample chat server.
+  version: 1.0.0
+  title: Chat Server Challange
+  termsOfService: 'http://swagger.io/terms/'
   contact:
-    email: "lorenzo@bemind.me"
+    email: lorenzo@bemind.me
   license:
-    name: "Apache 2.0"
-    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
-host: "server.chat.challange.bemind.me"
-basePath: "/"
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+host: server.chat.challange.bemind.me
+basePath: /
 tags:
-- name: "client"
-  description: "Chat Client Challange"
-  externalDocs:
-    description: "Challange"
-    url: "https://github.com/bemindinteractive/chat-client-challange"
+  - name: client
+    description: Chat Client Challange
+    externalDocs:
+      description: Challange
+      url: 'https://github.com/bemindinteractive/chat-client-challange'
 schemes:
-- "http"
+  - http
 paths:
   /login:
     post:
       tags:
-      - "authentication"
-      summary: "Authenticates an user"
-      description: ""
-      operationId: "logIn"
+        - authentication
+      summary: Authenticates an user
+      description: ''
+      operationId: logIn
       consumes:
-      - "application/json"
+        - application/json
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - in: "body"
-        name: "body"
-        description: "Auth object that has to be evaluated"
-        required: true
-        schema:
-          $ref: "#/definitions/body"
-      responses:
-        200:
-          description: "successful operation"
+        - in: body
+          name: body
+          description: Auth object that has to be evaluated
+          required: true
           schema:
-            $ref: "#/definitions/inline_response_200"
+            $ref: '#/definitions/Auth'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/User'
           headers:
             X-Rate-Limit:
-              type: "integer"
-              format: "int32"
-              description: "calls per hour allowed by the user"
+              type: integer
+              format: int32
+              description: calls per hour allowed by the user
             X-Expires-After:
-              type: "string"
-              format: "date-time"
-              description: "date in UTC when token expires"
-        400:
-          description: "Invalid username/password supplied"
-      x-swagger-router-controller: "Authentication"
+              type: string
+              format: date-time
+              description: date in UTC when token expires
+        '400':
+          description: Invalid username/password supplied
   /logout:
     post:
       tags:
-      - "authentication"
-      summary: "Logs out current logged in user session"
-      description: ""
-      operationId: "logOut"
+        - authentication
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logOut
       produces:
-      - "application/json"
+        - application/json
       parameters: []
       responses:
         default:
-          description: "successful operation"
-      x-swagger-router-controller: "Authentication"
+          description: successful operation
   /profile:
     get:
       tags:
-      - "contacts"
-      summary: "Get currently logged in user data"
-      description: ""
-      operationId: "getCurrentUserProfile"
+        - contacts
+      summary: Get currently logged in user data
+      description: ''
+      operationId: getCurrentUserProfile
       produces:
-      - "application/json"
+        - application/json
       parameters: []
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            $ref: "#/definitions/inline_response_200"
-        401:
-          description: "Unauthorized"
-      x-swagger-router-controller: "Contacts"
+            $ref: '#/definitions/User'
+        '401':
+          description: Unauthorized
   /contacts:
     get:
       tags:
-      - "contacts"
-      summary: "Finds contacts by name"
-      description: ""
-      operationId: "findContactsByName"
+        - contacts
+      summary: Finds contacts by name
+      description: ''
+      operationId: findContactsByName
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "name"
-        in: "query"
-        description: "Status values that need to be considered for filter"
-        required: true
-        type: "string"
+        - name: name
+          in: query
+          description: Status values that need to be considered for filter
+          required: true
+          type: string
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            type: "array"
+            type: array
             items:
-              $ref: "#/definitions/inline_response_200"
-        400:
-          description: "Invalid status value"
-        401:
-          description: "Unauthorized"
-      x-swagger-router-controller: "Contacts"
-  /contacts/{contactId}:
+              $ref: '#/definitions/User'
+        '400':
+          description: Invalid status value
+        '401':
+          description: Unauthorized
+  '/contacts/{contactId}':
     get:
       tags:
-      - "contacts"
-      summary: "Get contact by id"
-      description: ""
-      operationId: "getContactById"
+        - contacts
+      summary: Get contact by id
+      description: ''
+      operationId: getContactById
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "contactId"
-        in: "path"
-        description: "The id that needs to be fetched. "
-        required: true
-        type: "string"
+        - name: contactId
+          in: path
+          description: 'The id that needs to be fetched. '
+          required: true
+          type: string
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            $ref: "#/definitions/inline_response_200"
-        400:
-          description: "Invalid contactId supplied"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Contact not found"
-      x-swagger-router-controller: "Contacts"
-  /contacts/{contactId}/history:
+            $ref: '#/definitions/User'
+        '400':
+          description: Invalid contactId supplied
+        '401':
+          description: Unauthorized
+        '404':
+          description: Contact not found
+  '/contacts/{contactId}/history':
     get:
       tags:
-      - "chat"
-      summary: "Get history by contact id"
-      description: ""
-      operationId: "getHistoryByContactId"
+        - chat
+      summary: Get history by contact id
+      description: ''
+      operationId: getHistoryByContactId
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "contactId"
-        in: "path"
-        description: "The id that needs to be fetched. "
-        required: true
-        type: "string"
+        - name: contactId
+          in: path
+          description: 'The id that needs to be fetched. '
+          required: true
+          type: string
       responses:
-        200:
-          description: "successful operation"
+        '200':
+          description: successful operation
           schema:
-            $ref: "#/definitions/inline_response_200_1"
-        400:
-          description: "Invalid contactId supplied"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Contact not found"
-      x-swagger-router-controller: "Chat"
-  /contacts/{contactId}/send:
+            $ref: '#/definitions/History'
+        '400':
+          description: Invalid contactId supplied
+        '401':
+          description: Unauthorized
+        '404':
+          description: Contact not found
+  '/contacts/{contactId}/send':
     post:
       tags:
-      - "chat"
-      summary: "Get history by contact id"
-      description: ""
-      operationId: "sendMessage"
+        - chat
+      summary: Get history by contact id
+      description: ''
+      operationId: sendMessage
       consumes:
-      - "application/json"
+        - application/json
       produces:
-      - "application/json"
+        - application/json
       parameters:
-      - name: "contactId"
-        in: "path"
-        description: "The id that needs to be fetched. "
-        required: true
-        type: "string"
-      - in: "body"
-        name: "body"
-        description: "Message object that has to be sent"
-        required: true
-        schema:
-          $ref: "#/definitions/body_1"
-      responses:
-        200:
-          description: "successful operation"
+        - name: contactId
+          in: path
+          description: 'The id that needs to be fetched. '
+          required: true
+          type: string
+        - in: body
+          name: body
+          description: Message object that has to be sent
+          required: true
           schema:
-            $ref: "#/definitions/inline_response_200_1_messages"
-        400:
-          description: "Invalid contactId supplied"
-        401:
-          description: "Unauthorized"
-        404:
-          description: "Contact not found"
-      x-swagger-router-controller: "Chat"
+            $ref: '#/definitions/Message'
+      responses:
+        '200':
+          description: successful operation
+          schema:
+            $ref: '#/definitions/Message'
+        '400':
+          description: Invalid contactId supplied
+        '401':
+          description: Unauthorized
+        '404':
+          description: Contact not found
 definitions:
   Auth:
-    type: "object"
+    type: object
     required:
-    - "password"
-    - "username"
+      - username
+      - password
     properties:
       username:
-        type: "string"
-        example: "tizio"
+        type: string
+        example: tizio
       password:
-        type: "string"
-        example: "tizio.secret"
+        type: string
+        example: tizio.secret
   User:
-    type: "object"
+    type: object
     properties:
       id:
-        type: "string"
-        example: "2afbf956-42e2-4867-8fb7-2ae06ec096d8"
+        type: string
+        example: 2afbf956-42e2-4867-8fb7-2ae06ec096d8
       username:
-        type: "string"
-        example: "tizio"
+        type: string
+        example: tizio
       name:
-        type: "string"
-        example: "Tiberio"
+        type: string
+        example: Tiberio
       surname:
-        type: "string"
-        example: "Gracco"
+        type: string
+        example: Gracco
       email:
-        type: "string"
-        example: "tizio@bemind.me"
+        type: string
+        example: tizio@bemind.me
       avatar:
-        type: "string"
-        example: "data:image/jpeg;base64,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"
+        type: string
+        example: data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7
   History:
-    type: "object"
+    type: object
     properties:
       count:
-        type: "number"
-        format: "int64"
+        type: number
+        format: int64
       messages:
-        type: "array"
+        type: array
         items:
-          $ref: "#/definitions/inline_response_200_1_messages"
+          $ref: '#/definitions/Message'
   Message:
-    type: "object"
+    type: object
     properties:
       contactId:
-        type: "string"
-        example: "76e1b333-757b-4295-9959-6182195d676a"
+        type: string
+        example: 76e1b333-757b-4295-9959-6182195d676a
       message:
-        type: "string"
-        example: "Yo"
+        type: string
+        example: Yo
       date:
-        type: "string"
-        format: "date"
-        example: "2017-05-15T13:09:02.035Z"
-  body:
-    type: "object"
-    required:
-    - "password"
-    - "username"
-    properties:
-      username:
-        type: "string"
-        example: "tizio"
-      password:
-        type: "string"
-        example: "tizio.secret"
-  inline_response_200:
-    properties:
-      id:
-        type: "string"
-        example: "2afbf956-42e2-4867-8fb7-2ae06ec096d8"
-      username:
-        type: "string"
-        example: "tizio"
-      name:
-        type: "string"
-        example: "Tiberio"
-      surname:
-        type: "string"
-        example: "Gracco"
-      email:
-        type: "string"
-        example: "tizio@bemind.me"
-      avatar:
-        type: "string"
-        example: "data:image/jpeg;base64,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"
-  inline_response_200_1_messages:
-    properties:
-      contactId:
-        type: "string"
-        example: "76e1b333-757b-4295-9959-6182195d676a"
-      message:
-        type: "string"
-        example: "Yo"
-      date:
-        type: "string"
-        format: "date"
-        example: "2017-05-15T13:09:02.035Z"
-  inline_response_200_1:
-    properties:
-      count:
-        type: "number"
-        format: "int64"
-      messages:
-        type: "array"
-        items:
-          $ref: "#/definitions/inline_response_200_1_messages"
-  body_1:
-    type: "object"
-    properties:
-      contactId:
-        type: "string"
-        example: "76e1b333-757b-4295-9959-6182195d676a"
-      message:
-        type: "string"
-        example: "Yo"
-      date:
-        type: "string"
-        format: "date"
-        example: "2017-05-15T13:09:02.035Z"
+        type: string
+        format: date
+        example: '2017-05-15T13:09:02.035Z'

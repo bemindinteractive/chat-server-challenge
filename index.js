@@ -6,12 +6,13 @@ const cookieParser = require('cookie-parser')
 const uuid = require('uuid/v4')
 const sha256 = require('sha256')
 const jetpack = require('fs-jetpack')
-const swaggerTools = require('swagger-tools')
-const jsyaml = require('js-yaml')
 
 const app = express()
 
 const port = process.env.PORT || 8080
+
+app.use(express.static('swagger-ui'))
+app.use(express.static('api'))
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin)
@@ -118,9 +119,9 @@ const getContacts = (sessionId) => db.users[db.sessions[sessionId].username].con
 
 const getContact = (sessionId, contactId) => getContacts(sessionId).find(c => c.id === contactId)
 
-app.get('/', (req, res) => {
-  return res.redirect(301, '/docs')
-})
+// app.get('/', (req, res) => {
+//   return res.redirect(301, '/docs')
+// })
 
 app.post('/login', (req, res) => {
   if (!req.body || !req.body.username || !req.body.password) {
@@ -218,35 +219,8 @@ app.post('/contacts/:contactId/send', (req, res) => {
   }
 })
 
-// // swaggerRouter configuration
-// const options = {
-//   swaggerUi: '/swagger.json',
-//   controllers: './controllers',
-//   useStubs: process.env.NODE_ENV === 'development' ? true : false // Conditionally turn on stubs (mock mode)
-// }
-
-// The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
-const spec = jetpack.read('./api/swagger.yaml', 'utf8')
-const swaggerDoc = jsyaml.safeLoad(spec)
-
-// Initialize the Swagger middleware
-swaggerTools.initializeMiddleware(swaggerDoc, function(middleware) {
-  // // Interpret Swagger resources and attach metadata to request - must be first in swagger-tools middleware chain
-  // app.use(middleware.swaggerMetadata())
-
-  // // Validate Swagger requests
-  // app.use(middleware.swaggerValidator())
-
-  // // Route validated requests to appropriate controller
-  // app.use(middleware.swaggerRouter(options))
-
-  // Serve the Swagger documents and Swagger UI
-  app.use(middleware.swaggerUi())
-
-  // Start the server
-  app.listen(port, '0.0.0.0', () => {
-    console.log(`Chat server listening on http://localhost:${port}!`)
-    console.log(`Swagger-ui is available on http://localhost:${port}/docs`)
-    initDb()
-  })
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Chat server listening on http://localhost:${port}!`)
+  console.log(`Swagger-ui is available on http://localhost:${port}/docs`)
+  initDb()
 })
