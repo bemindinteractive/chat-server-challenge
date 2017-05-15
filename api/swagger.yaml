@@ -97,7 +97,7 @@ paths:
         - name: name
           in: query
           description: Status values that need to be considered for filter
-          required: true
+          required: false
           type: string
       responses:
         '200':
