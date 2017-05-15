@@ -19,6 +19,7 @@ tags:
       url: 'https://github.com/bemindinteractive/chat-client-challange'
 schemes:
   - http
+  - https
 paths:
   /login:
     post:
