@@ -231,6 +231,10 @@ definitions:
       avatar:
         type: string
         example: data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7
+      unreadCount: 
+        type: number
+        format: int32
+        example: 3
   History:
     type: object
     properties:
