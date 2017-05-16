@@ -92,7 +92,7 @@ const initDb = () => {
                 contactId: db.users[uu].id,
                 message: `Ciao ${db.users[u].name}`,
                 sentDate: new Date(db.initDate.getTime() - minuteOffset).toISOString(),
-                readDate: null
+                readDate: new Date(db.initDate.getTime() - minuteOffset).toISOString()
               }]
             }
           }))
