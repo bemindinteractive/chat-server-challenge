@@ -234,9 +234,6 @@ definitions:
   History:
     type: object
     properties:
-      count:
-        type: number
-        format: int64
       messages:
         type: array
         items:
@@ -250,7 +247,11 @@ definitions:
       message:
         type: string
         example: Yo
-      date:
+      sentDate:
+        type: string
+        format: date
+        example: '2017-05-15T13:09:02.035Z'
+      readDate:
         type: string
         format: date
         example: '2017-05-15T13:09:02.035Z'

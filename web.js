@@ -85,14 +85,15 @@ const initDb = () => {
                 id: uuid(),
                 contactId: db.users[u].id,
                 message: `Ciao ${db.users[uu].name}`,
-                timestamp: new Date(db.initDate.getTime() - (minuteOffset * 2)).toISOString()
+                sentDate: new Date(db.initDate.getTime() - (minuteOffset * 2)).toISOString(),
+                readDate: null
               }, {
                 id: uuid(),
                 contactId: db.users[uu].id,
                 message: `Ciao ${db.users[u].name}`,
-                timestamp: new Date(db.initDate.getTime() - minuteOffset).toISOString()
-              }],
-              count: 2
+                sentDate: new Date(db.initDate.getTime() - minuteOffset).toISOString(),
+                readDate: null
+              }]
             }
           }))
       }
@@ -122,6 +123,18 @@ const cleanUser = (user) => {
 const getContacts = (sessionId) => db.users[db.sessions[sessionId].username].contacts
 
 const getContact = (sessionId, contactId) => getContacts(sessionId).find(c => c.id === contactId)
+
+const updateUnreadCount = (contact) => {
+  if (!contact.unreadCount) {
+    contact.unreadCount = contact.history.messages.length
+  }
+  contact.history.messages.forEach(m => {
+    if (!!m.readDate) {
+      contact.unreadCount--
+    }
+  })
+  return contact
+}
 
 // app.get('/', (req, res) => {
 //   return res.redirect(301, '/docs')
@@ -170,6 +183,9 @@ app.get('/contacts', (req, res) => {
     if (!!req.query.name) {
       contacts = contacts.filter(c => c.name.toLowerCase().indexOf(req.query.name) > -1 || c.surname.toLowerCase().indexOf(req.query.name) > -1 || c.username.toLowerCase().indexOf(req.query.name) > -1)
     }
+
+    contacts = contacts.map(c => updateUnreadCount(c))
+
     res.json(contacts.map(c => cleanUser(c)))
   } else {
     res.status(401).json({ message: 'Unauthorized' })
@@ -178,9 +194,11 @@ app.get('/contacts', (req, res) => {
 
 app.get('/contacts/:contactId', (req, res) => {
   if (isAuthenticated(req)) {
-    const contact = getContact(req.cookies.sessionId, req.params.contactId)
+    let contact = getContact(req.cookies.sessionId, req.params.contactId)
 
     if (!!contact) {
+      contact = updateUnreadCount(contact)
+      commitDb()
       res.json(cleanUser(contact))
     } else {
       res.status(404).json({ message: 'Contact not found' })
@@ -195,6 +213,15 @@ app.get('/contacts/:contactId/history', (req, res) => {
     const contact = getContact(req.cookies.sessionId, req.params.contactId)
 
     if (!!contact) {
+
+      contact.history.messages.forEach(m => {
+        if (!m.readDate) {
+          m.readDate = (new Date()).toISOString()
+        }
+      })
+
+      commitDb()
+
       res.json(contact.history)
     } else {
       res.status(404).json({ message: 'Contact not found' })
@@ -225,6 +252,6 @@ app.post('/contacts/:contactId/send', (req, res) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Chat server listening on http://localhost:${port}!`)
-  console.log(`Swagger-ui is available on http://localhost:${port}/docs`)
+  console.log(`Swagger-ui is available on http://localhost:${port}`)
   initDb()
 })
