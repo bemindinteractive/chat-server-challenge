@@ -237,7 +237,7 @@ app.post('/contacts/:contactId/send', (req, res) => {
 
     if (!!contact) {
 
-      const message = Object.assign({}, req.body, { id: uuid(), date: (new Date()).toISOString() })
+      const message = Object.assign({}, req.body, { id: uuid(), sentDate: (new Date()).toISOString(), readDate: (new Date()).toISOString() })
 
       contact.history.messages.push(message)
       commitDb()
