@@ -9,7 +9,7 @@ info:
   license:
     name: Apache 2.0
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-host: sleepy-meadow-32722.herokuapp.com
+host: chat-server-challange.herokuapp.com
 basePath: /
 tags:
   - name: client
@@ -231,7 +231,7 @@ definitions:
       avatar:
         type: string
         example: data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7
-      unreadCount: 
+      unreadCount:
         type: number
         format: int32
         example: 3
