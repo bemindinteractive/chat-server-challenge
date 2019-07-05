@@ -125,7 +125,7 @@ const getContacts = (sessionId) => db.users[db.sessions[sessionId].username].con
 const getContact = (sessionId, contactId) => getContacts(sessionId).find(c => c.id === contactId)
 
 const updateUnreadCount = (contact) => {
-    contact.unreadCount = contact.history.messages.reduce(res, m => !!m.readDate ? (res +1) : res , 0)
+    contact.unreadCount = contact.history.messages.reduce((res, m) => !!m.readDate ? (res +1) : res , 0)
 
   return contact
 }
