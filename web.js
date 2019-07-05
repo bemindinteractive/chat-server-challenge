@@ -124,7 +124,11 @@ const getContacts = (sessionId) => db.users[db.sessions[sessionId].username].con
 
 const getContact = (sessionId, contactId) => getContacts(sessionId).find(c => c.id === contactId)
 
-const updateUnreadCount = (contact) => contact.history.messages.reduce(res, m => !!m.readDate ? (res +1) : res , 0)
+const updateUnreadCount = (contact) => {
+    contact.unreadCount = contact.history.messages.reduce(res, m => !!m.readDate ? (res +1) : res , 0)
+
+  return contact
+}
 
 // app.get('/', (req, res) => {
 //   return res.redirect(301, '/docs')
