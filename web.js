@@ -233,6 +233,11 @@ app.get('/contacts/:contactId/history', (req, res) => {
 
 app.post('/contacts/:contactId/send', (req, res) => {
   if (isAuthenticated(req)) {
+
+    if (!!req.body.readDate) {
+      return res.status(400).json({ message: 'Bad Request: readDate mustn\'t be provided'  })
+    }
+
     const contact = getContact(req.cookies.sessionId, req.params.contactId)
 
     if (!!contact) {
