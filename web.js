@@ -124,17 +124,7 @@ const getContacts = (sessionId) => db.users[db.sessions[sessionId].username].con
 
 const getContact = (sessionId, contactId) => getContacts(sessionId).find(c => c.id === contactId)
 
-const updateUnreadCount = (contact) => {
-  if (!contact.unreadCount) {
-    contact.unreadCount = contact.history.messages.length
-  }
-  contact.history.messages.forEach(m => {
-    if (!!m.readDate) {
-      contact.unreadCount--
-    }
-  })
-  return contact
-}
+const updateUnreadCount = (contact) => contact.history.messages.reduce(res, m => !!m.readDate ? (res +1) : res , 0)
 
 // app.get('/', (req, res) => {
 //   return res.redirect(301, '/docs')
@@ -234,7 +224,8 @@ app.get('/contacts/:contactId/history', (req, res) => {
 app.post('/contacts/:contactId/send', (req, res) => {
   if (isAuthenticated(req)) {
 
-    if (!!req.body.readDate) {
+    if (!!req.body.readDate
+      ) {
       return res.status(400).json({ message: 'Bad Request: readDate mustn\'t be provided'  })
     }
 
