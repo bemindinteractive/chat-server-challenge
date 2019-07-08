@@ -4,21 +4,22 @@
   "main": "web.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon web.js",
+    "dev": "nodemon --inspect web.js",
     "start": "node web.js",
     "test": "standard"
   },
   "dependencies": {
-    "body-parser": "^1.17.1",
-    "cookie-parser": "^1.4.3",
-    "crypto": "^0.0.3",
-    "express": "^4.15.2",
-    "fs-jetpack": "^1.0.0",
-    "morgan": "^1.8.1",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.4",
+    "crypto": "^1.0.1",
+    "express": "^4.17.1",
+    "fs-jetpack": "^2.2.2",
+    "morgan": "^1.9.1",
     "sha256": "^0.2.0",
     "uuid": "^3.0.1"
   },
   "devDependencies": {
-    "standard": "^10.0.2"
+    "nodemon": "^1.19.1",
+    "standard": "^12.0.1"
   }
 }
