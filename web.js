@@ -141,7 +141,6 @@ app.get('/contacts/:contactId', (req, res) => {
 })
 
 app.get('/contacts/:contactId/history', (req, res) => {
-  throw new Error('asdasdasd')
   if (isAuthenticated(req, store.getState().sessions)) {
     const contact = getContact(
       req.cookies.sessionId,
