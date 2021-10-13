@@ -5,17 +5,20 @@
   "license": "MIT",
   "scripts": {
     "dev": "nodemon --inspect web.js",
+    "dev:fe": "nodemon --inspect test-socket.js",
     "start": "node web.js",
     "test": "standard"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
+    "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "fs-jetpack": "^4.2.0",
     "morgan": "^1.9.1",
     "sha256": "^0.2.0",
+    "socket.io": "^4.2.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
