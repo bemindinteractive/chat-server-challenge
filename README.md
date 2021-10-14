@@ -6,7 +6,7 @@ L'endpoint socket non è documentato ma è disponibile sulla stessa porta del se
 
 il socket emette un solo evento: `chat message`.
 
-L'autenticazione restituirà nella risposta un cookie di sessione che verrà passato in tutte le richieste successive per identificare la sessione.
+L'autenticazione restituirà nella risposta un cookie di sessione che andrà passato in tutte le richieste successive per identificare la sessione.
 
 E' previsto l'accesso multi utente da client diversi per effettuare prove di comunicazione, di seguito le credenziali:
 
