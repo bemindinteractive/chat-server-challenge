@@ -1,22 +1,27 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const http = require('http')
-const { Server } = require('socket.io')
-const morgan = require('morgan')
-const crypto = require('crypto')
-const cookieParser = require('cookie-parser')
-const { v4: uuid } = require('uuid')
-const sha256 = require('sha256')
+import express from 'express'
+import bodyParser from 'body-parser'
+import cors from 'cors'
+import http from 'http'
+import { Server } from 'socket.io'
+import morgan from 'morgan'
+import crypto from 'crypto'
+import cookieParser from 'cookie-parser'
+import { v4 as uuid } from 'uuid'
+import sha256 from 'sha256'
 
-const {
-  Store,
-  Auth: { isAuthenticated, cleanSession },
-  Contacts: { getContacts, getContact, updateUnreadCount, getUserById },
-} = require('./lib')
+import {
+  getDb,
+  isAuthenticated,
+  cleanUser,
+  getContactById,
+  updateUnreadCount,
+  getUserById,
+  getSessionUser,
+  createSession,
+} from './lib/index.js'
 
 const app = express()
-const store = new Store()
+const db = getDb()
 const port = process.env.PORT || 8080
 const host = process.env.HOST || '0.0.0.0'
 
@@ -88,28 +93,30 @@ io.on('connection', (socket) => {
 //   return res.redirect(301, '/docs')
 // })
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+  await db.read()
   if (!req.body || !req.body.username || !req.body.password) {
     res.status(400).json({ message: 'Invalid username or password supplied' })
   } else if (
-    !!store.getState().users[req.body.username] &&
-    sha256(req.body.password) === store.getState().users[req.body.username].password
+    !!db.data.users[req.body.username] &&
+    sha256(req.body.password) === db.data.users[req.body.username].password
   ) {
     const sessionId = crypto.randomBytes(64).toString('hex')
 
-    store.getState().sessions[sessionId] = store.getState().users[req.body.username]
-    store.commitState()
+    db.data.sessions[sessionId] = createSession(db.data.users[req.body.username])
+    await db.write()
     res.cookie('sessionId', sessionId, { session: true, httpOnly: true })
-    res.json(cleanSession(store.getState().users[req.body.username]))
+    res.json(cleanUser(db.data.users[req.body.username]))
   } else {
     res.status(400).json({ message: 'Bad request' })
   }
 })
 
-app.post('/logout', (req, res) => {
-  if (!!req.cookies.sessionId && store.getState().sessions[req.cookies.sessionId]) {
-    delete store.getState().sessions[req.cookies.sessionId]
-    store.commitState()
+app.post('/logout', async (req, res) => {
+  await db.read()
+  if (!!req.cookies.sessionId && db.data.sessions[req.cookies.sessionId]) {
+    delete db.data.sessions[req.cookies.sessionId]
+    await db.write()
     res.clearCookie('sessionId')
     res.json({ message: 'You are now logged out' })
   } else {
@@ -117,56 +124,77 @@ app.post('/logout', (req, res) => {
   }
 })
 
-app.get('/profile', (req, res) => {
-  if (isAuthenticated(req, store.getState().sessions)) {
-    res.json(
-      cleanSession(
-        store.getState().users[store.getState().sessions[req.cookies.sessionId].username]
-      )
-    )
+app.get('/profile', async (req, res) => {
+  await db.read()
+  if (isAuthenticated(req, db.data.sessions)) {
+    res.json(cleanUser(db.data.users[db.data.sessions[req.cookies.sessionId].username]))
   } else {
     res.status(401).json({ message: 'Unauthorized' })
   }
 })
 
-app.get('/contacts', (req, res) => {
-  if (isAuthenticated(req, store.getState().sessions)) {
-    let contacts = getContacts(
-      req.cookies.sessionId,
-      store.getState().users,
-      store.getState().sessions
-    )
+app.get('/contacts', async (req, res) => {
+  await db.read()
+  if (isAuthenticated(req, db.data.sessions)) {
+    const user = getUserById(db.data.sessions[req.cookies.sessionId].id, db.data.users)
 
-    if (!!req.query.name) {
+    let contacts = user.contacts.map((c) => ({
+      ...cleanUser(getContactById(user, c.contactId, db.data.users)),
+      history: {
+        ...db.data.histories[c.historyId],
+        unreadCount: db.data.histories[c.historyId].messages.reduce((acc, m) => {
+          if (!m.readDate && m.contactId !== user.id) {
+            acc++
+          }
+          return acc
+        }, 0),
+      },
+      contacts: undefined,
+    }))
+
+    if (!!req.query.q) {
       contacts = contacts.filter(
         (c) =>
-          c.name.toLowerCase().indexOf(req.query.name) > -1 ||
-          c.surname.toLowerCase().indexOf(req.query.name) > -1 ||
-          c.username.toLowerCase().indexOf(req.query.name) > -1
+          c.name.toLowerCase().indexOf(req.query.q) > -1 ||
+          c.surname.toLowerCase().indexOf(req.query.q) > -1 ||
+          c.username.toLowerCase().indexOf(req.query.q) > -1
       )
     }
 
-    contacts = contacts.map((c) => updateUnreadCount(c))
-
-    res.json(contacts.map((c) => cleanSession(c)))
+    res.json(contacts)
   } else {
     res.status(401).json({ message: 'Unauthorized' })
   }
 })
 
-app.get('/contacts/:contactId', (req, res) => {
-  if (isAuthenticated(req, store.getState().sessions)) {
-    let contact = getContact(
-      req.cookies.sessionId,
-      store.getState().users,
-      store.getState().sessions,
-      req.params.contactId
-    )
+app.get('/contacts/:contactId', async (req, res) => {
+  await db.read()
+  if (isAuthenticated(req, db.data.sessions)) {
+    const user = getSessionUser(req, db.data.sessions, db.data.users)
+    const contact = getContactById(user, req.params.contactId, db.data.users)
 
     if (!!contact) {
-      contact = updateUnreadCount(contact)
-      store.commitState()
-      res.json(cleanSession(contact))
+      const history = db.data.histories[contact.historyId]
+
+      history.messages.forEach((m) => {
+        if (!m.readDate && m.contactId !== user.id) {
+          m.readDate = new Date().toISOString()
+        }
+      })
+
+      await db.write()
+
+      contact.history = {
+        ...history,
+        unreadCount: history.messages.reduce((acc, m) => {
+          if (!m.readDate && m.contactId !== user.id) {
+            acc++
+          }
+          return acc
+        }, 0),
+      }
+
+      res.json(cleanUser(contact))
     } else {
       res.status(404).json({ message: 'Contact not found' })
     }
@@ -175,23 +203,32 @@ app.get('/contacts/:contactId', (req, res) => {
   }
 })
 
-app.get('/contacts/:contactId/history', (req, res) => {
-  if (isAuthenticated(req, store.getState().sessions)) {
-    const contact = getContact(
-      req.cookies.sessionId,
-      store.getState().users,
-      store.getState().sessions,
-      req.params.contactId
-    )
+app.get('/contacts/:contactId/history', async (req, res) => {
+  await db.read()
+  if (isAuthenticated(req, db.data.sessions)) {
+    const user = getSessionUser(req, db.data.sessions, db.data.users)
+    const contact = getContactById(user, req.params.contactId, db.data.users)
 
     if (!!contact) {
-      contact.history.messages.forEach((m) => {
-        if (!m.readDate) {
+      const history = db.data.histories[contact.historyId]
+
+      history.messages.forEach((m) => {
+        if (!m.readDate && m.contactId === contact.id) {
           m.readDate = new Date().toISOString()
         }
       })
 
-      store.commitState()
+      await db.write()
+
+      contact.history = {
+        ...history,
+        unreadCount: history.messages.reduce((acc, m) => {
+          if (!m.readDate && m.contactId === contact.id) {
+            acc++
+          }
+          return acc
+        }, 0),
+      }
 
       res.json(contact.history)
     } else {
@@ -202,42 +239,35 @@ app.get('/contacts/:contactId/history', (req, res) => {
   }
 })
 
-app.post('/contacts/:contactId/send', (req, res) => {
-  if (isAuthenticated(req, store.getState().sessions)) {
+app.post('/contacts/:contactId/send', async (req, res) => {
+  await db.read()
+  if (isAuthenticated(req, db.data.sessions)) {
     if (!!req.body.readDate) {
       return res.status(400).json({ message: "Bad Request: readDate mustn't be provided" })
     }
 
-    const contact = getContact(
-      req.cookies.sessionId,
-      store.getState().users,
-      store.getState().sessions,
-      req.params.contactId
-    )
-
-    const senderUser = getUserById(
-      store.getState().sessions[req.cookies.sessionId].id,
-      store.getState().users
-    )
-
-    const recipientUser = getUserById(req.params.contactId, store.getState().users)
-
-    console.log(senderUser, recipientUser)
+    const user = getSessionUser(req, db.data.sessions, db.data.users)
+    const contact = getContactById(user, req.params.contactId, db.data.users)
 
     if (!!contact) {
       const message = Object.assign({}, req.body, {
         id: uuid(),
-        contactId: senderUser.id,
+        contactId: user.id,
         sentDate: new Date().toISOString(),
-        readDate: new Date().toISOString(),
       })
 
-      contact.history.messages.push(message)
-      store.commitState()
+      const history = db.data.histories[contact.historyId]
+
+      history.messages.push(message)
+
+      await db.write()
+
+      contact.history = history
+
       res.json(message)
       io.emit('chat message', {
-        senderId: senderUser.id,
-        recipientId: req.params.contactId,
+        senderId: user.id,
+        recipientId: contact.contactId,
       }) // This will emit the event to all connected sockets
     } else {
       res.status(404).json({ message: 'Contact not found' })
@@ -247,8 +277,8 @@ app.post('/contacts/:contactId/send', (req, res) => {
   }
 })
 
-server.listen(port, host, () => {
+server.listen(port, host, async () => {
   console.log(`Chat server listening on http://${host}:${port}!`)
   console.log(`Swagger-ui is available on http://${host}:${port}/`)
-  store.commitState()
+  // await db.write()
 })

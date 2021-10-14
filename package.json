@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "web.js",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "nodemon --inspect web.js",
     "dev:fe": "nodemon --inspect test-socket.js",
@@ -16,6 +17,7 @@
     "crypto": "^1.0.1",
     "express": "^4.17.1",
     "fs-jetpack": "^4.2.0",
+    "lowdb": "^3.0.0",
     "morgan": "^1.9.1",
     "sha256": "^0.2.0",
     "socket.io": "^4.2.0",
