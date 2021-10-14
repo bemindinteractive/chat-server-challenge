@@ -41,20 +41,20 @@ app.use(cookieParser())
 //   next()
 // })
 
-const whitelist = [
-  'http://localhost:1337',
-  'http://0.0.0.0:1337',
-  'http://localhost:3000',
-  'http://0.0.0.0:3000',
-]
+// const whitelist = [
+//   'http://localhost:1337',
+//   'http://0.0.0.0:1337',
+//   'http://localhost:3000',
+//   'http://0.0.0.0:3000',
+// ]
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
+    // if (whitelist.indexOf(origin) !== -1) {
+    callback(null, true)
+    // } else {
+    //   callback(new Error('Not allowed by CORS'))
+    // }
   },
   credentials: true,
 }
