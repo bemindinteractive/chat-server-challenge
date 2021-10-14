@@ -4,7 +4,7 @@ La documentazione delle API REST è accessibile dalla homepage del servizio.
 
 L'endpoint socket non è documentato ma è disponibile sulla stessa porta del server http.
 
-il socket emette un solo evento: `chat message`.
+il socket emette un solo tipo di evento: `chat message`.
 
 L'autenticazione restituirà nella risposta un cookie di sessione che andrà passato in tutte le richieste successive per identificare la sessione.
 
