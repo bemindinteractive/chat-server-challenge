@@ -14,7 +14,6 @@ import {
   isAuthenticated,
   cleanUser,
   getContactById,
-  updateUnreadCount,
   getUserById,
   getSessionUser,
   createSession,
