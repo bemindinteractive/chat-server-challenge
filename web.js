@@ -94,6 +94,13 @@ async function main() {
 
   app.post('/login', async (req, res) => {
     await db.read()
+
+    await new Promise((resolve) =>
+      setTimeout(() => {
+        resolve({ data: 'your return data' })
+      }, 3000)
+    )
+
     if (!req.body || !req.body.username || !req.body.password) {
       res.status(400).json({ message: 'Invalid username or password supplied' })
     } else if (
