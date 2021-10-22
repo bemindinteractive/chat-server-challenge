@@ -89,13 +89,13 @@ paths:
     get:
       tags:
         - contacts
-      summary: Finds contacts by name
+      summary: Finds contacts by name, surname or username
       description: ''
-      operationId: findContactsByName
+      operationId: findContacts
       produces:
         - application/json
       parameters:
-        - name: name
+        - name: q
           in: query
           description: Status values that need to be considered for filter
           required: false

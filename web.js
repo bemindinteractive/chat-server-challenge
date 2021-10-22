@@ -111,7 +111,7 @@ async function main() {
 
       db.data.sessions[sessionId] = createSession(db.data.users[req.body.username])
       await db.write()
-      res.cookie('sessionId', sessionId, { session: true, httpOnly: true })
+      res.cookie('sessionId', sessionId, { session: true, httpOnly: true, secure: true })
       res.json(cleanUser(db.data.users[req.body.username]))
     } else {
       res.status(400).json({ message: 'Bad request' })
