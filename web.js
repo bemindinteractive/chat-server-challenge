@@ -114,7 +114,6 @@ async function main() {
       res.cookie('sessionId', sessionId, {
         session: true,
         httpOnly: true,
-        secure: true,
         sameSite: 'none',
       })
       res.json(cleanUser(db.data.users[req.body.username]))
