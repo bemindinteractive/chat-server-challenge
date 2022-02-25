@@ -1,21 +1,22 @@
-import express from 'express'
 import bodyParser from 'body-parser'
-import cors from 'cors'
-import http from 'http'
-import { Server } from 'socket.io'
-import morgan from 'morgan'
-import crypto from 'crypto'
 import cookieParser from 'cookie-parser'
-import { v4 as uuid } from 'uuid'
+import cors from 'cors'
+import crypto from 'crypto'
+import express from 'express'
+import http from 'http'
+import morgan from 'morgan'
 import sha256 from 'sha256'
+import { Server } from 'socket.io'
+import { v4 as uuid } from 'uuid'
+
 import {
-  getDb,
-  isAuthenticated,
   cleanUser,
-  getContactById,
-  getUserById,
-  getSessionUser,
   createSession,
+  getContactById,
+  getDb,
+  getSessionUser,
+  getUserById,
+  isAuthenticated,
 } from './lib/index.js'
 
 async function main() {
@@ -114,7 +115,7 @@ async function main() {
       res.cookie('sessionId', sessionId, {
         session: true,
         httpOnly: true,
-        secure: true,
+        secure: false,
         sameSite: 'none',
       })
       res.json(cleanUser(db.data.users[req.body.username]))
@@ -164,11 +165,10 @@ async function main() {
       }))
 
       if (!!req.query.q) {
+        const queryRegex = new RegExp(req.query.q, 'i')
         contacts = contacts.filter(
           (c) =>
-            c.name.toLowerCase().indexOf(req.query.q) > -1 ||
-            c.surname.toLowerCase().indexOf(req.query.q) > -1 ||
-            c.username.toLowerCase().indexOf(req.query.q) > -1
+            queryRegex.test(c.name) || queryRegex.test(c.surname) || queryRegex.test(c.username)
         )
       }
 
