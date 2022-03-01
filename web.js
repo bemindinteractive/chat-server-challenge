@@ -150,19 +150,26 @@ async function main() {
     if (isAuthenticated(req, db.data.sessions)) {
       const user = getUserById(db.data.sessions[req.cookies.sessionId].id, db.data.users)
 
-      let contacts = user.contacts.map((c) => ({
-        ...cleanUser(getContactById(user, c.id, db.data.users)),
-        history: {
-          unreadCount: db.data.histories[c.historyId].messages.reduce((acc, m) => {
-            if (!m.readDate && m.contactId !== user.id) {
-              acc++
-            }
-            return acc
-          }, 0),
-        },
-        contacts: undefined,
-        historyId: undefined,
-      }))
+      let contacts = user.contacts.map((c) => {
+        const contact = getContactById(user, c.id, db.data.users)
+        if (contact) {
+          return {
+            ...cleanUser(getContactById(user, c.id, db.data.users)),
+            history: {
+              unreadCount: db.data.histories[c.historyId].messages.reduce((acc, m) => {
+                if (!m.readDate && m.contactId !== user.id) {
+                  acc++
+                }
+                return acc
+              }, 0),
+            },
+            contacts: undefined,
+            historyId: undefined,
+          }
+        } else {
+          return null
+        }
+      })
 
       if (!!req.query.q) {
         const queryRegex = new RegExp(req.query.q, 'i')
